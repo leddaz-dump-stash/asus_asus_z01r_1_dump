@@ -1,0 +1,61 @@
+#!/vendor/bin/sh
+
+LOG_TAG=hostapd_cmd
+
+#record debug information to logcat log
+logd () {
+    /system/bin/log -t $LOG_TAG -p d "$@"
+}
+
+ACTION=`getprop persist.sys.wifi.hostapd.cmd`
+
+log -t $LOG_TAG -p d hostapd_cmd enter
+
+retry_connect=10
+while [ $retry_connect -ne 0 ];
+do
+	hostapd_cli -iwlan0 -p/data/vendor/wifi/hostapd/ctrl interface
+	ret1=$?
+	hostapd_cli -iwlan1 -p/data/vendor/wifi/hostapd/ctrl interface
+	ret2=$?
+
+	log -t $LOG_TAG -p d "ret1=$ret1 ret2=$ret2"
+	if [ $ret1 -eq 0 ] && [ $ret2 -eq 0 ]; then
+		log -t $LOG_TAG -p d "hostapd connectable"
+		break
+	else
+		retry_connect=`expr $retry_connect - 1`
+		log -t $LOG_TAG -p d "hostapd not connectable, retrying... ($retry_connect)"
+		usleep 100000
+        break
+	fi
+done
+if [ $retry_connect -eq 0 ]; then
+	log -t $LOG_TAG -p d "ERROR: cannot connect to hostapd!"
+	exit -1
+fi
+
+if [ "$ACTION" = "add_reload" -o "$ACTION" = "remove_reload" ]
+then
+hostapd_cli -iwlan0 -p/data/vendor/wifi/hostapd/ctrl set macaddr_acl 1
+hostapd_cli -iwlan0 -p/data/vendor/wifi/hostapd/ctrl set accept_mac_file /data/misc/wifi/hostapd.accept
+hostapd_cli -iwlan1 -p/data/vendor/wifi/hostapd/ctrl set macaddr_acl 1
+hostapd_cli -iwlan1 -p/data/vendor/wifi/hostapd/ctrl set accept_mac_file /data/misc/wifi/hostapd.accept
+log -t $LOG_TAG -p d "$ACTION"
+elif [ "$ACTION" = "unload" ]
+then
+hostapd_cli -iwlan0 -p/data/vendor/wifi/hostapd/ctrl set macaddr_acl 0
+hostapd_cli -iwlan0 -p/data/vendor/wifi/hostapd/ctrl set deny_mac_file /data/misc/wifi/hostapd.deny
+hostapd_cli -iwlan1 -p/data/vendor/wifi/hostapd/ctrl set macaddr_acl 0
+hostapd_cli -iwlan1 -p/data/vendor/wifi/hostapd/ctrl set deny_mac_file /data/misc/wifi/hostapd.deny
+
+log -t $LOG_TAG -p d "$ACTION"
+elif [ "$ACTION" = "DISASSOCIATE" ]
+then
+TARGET=`getprop persist.sys.wifi.hostapd.target`
+hostapd_cli -iwlan0 -p/data/vendor/wifi/hostapd/ctrl $ACTION $TARGET
+hostapd_cli -iwlan1 -p/data/vendor/wifi/hostapd/ctrl $ACTION $TARGET
+/system/bin/log -t $LOG_TAG -p d "$ACTION" "$TARGET"
+fi
+
+exit 0

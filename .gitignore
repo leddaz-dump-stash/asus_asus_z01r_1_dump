@@ -1,0 +1,8 @@
+modem.img
+payload/modem.img
+payload/system.img
+payload/vendor.img
+payload/xrom.img
+system/system/priv-app/GmsCore/GmsCore.apk
+system/system/priv-app/Velvet/Velvet.apk
+vendor/etc/dts/dts-eagle.lic

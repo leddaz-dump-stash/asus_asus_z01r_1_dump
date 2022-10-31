@@ -1,0 +1,14 @@
+# qssi-user 10 QKQ1.191008.001 WW_user_100.10.107.110_20201118 release-keys
+- manufacturer: asusasusasus
+- platform: sdm845sdm845sdm845
+- codename: ASUS_Z01R_1
+- flavor: qssi-user
+- release: 10
+- id: QKQ1.191008.001
+- incremental: WW_user_100.10.107.110_20201118
+- tags: release-keys
+- fingerprint: 
+- is_ab: true
+- brand: asus
+- branch: qssi-user-10-QKQ1.191008.001-WW_user_100.10.107.110_20201118-release-keys
+- repo: asus_asus_z01r_1_dump
